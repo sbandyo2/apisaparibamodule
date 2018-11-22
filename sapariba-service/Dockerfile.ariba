@@ -1,0 +1,8 @@
+FROM anapsix/alpine-java:latest
+MAINTAINER ibm.com
+RUN apk --no-cache add netcat-openbsd
+COPY ariba.jar .
+COPY ariba-entrypoint.sh .
+RUN chmod +x ariba-entrypoint.sh
+ENTRYPOINT ["sh","ariba-entrypoint.sh"]
+EXPOSE 8086

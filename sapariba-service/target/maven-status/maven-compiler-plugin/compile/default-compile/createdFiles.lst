@@ -1,0 +1,14 @@
+com\ibm\utils\ServiceUtils.class
+com\ibm\constants\AribaConstants.class
+com\ibm\exception\ApiError.class
+com\ibm\bean\LineItemDTO.class
+com\ibm\model\BaseVO.class
+com\ibm\exception\ServiceException.class
+com\ibm\bean\VOWrapperDTO.class
+com\ibm\model\MonitorVO.class
+com\ibm\model\QueryDetailsVO.class
+com\ibm\controller\AribaServiceController.class
+com\ibm\service\DataTransformerService.class
+com\ibm\saparibaservice\SapAribaServiceApplication.class
+com\ibm\exception\GlobalDefaultExceptionHandler.class
+com\ibm\bean\RequisitionDTO.class
