@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -34,6 +37,17 @@ public final class ServiceUtils {
 		
 		return formattedTs;
 	}
+	
+	/**
+	 * @return
+	 */
+	public static String getCurrentDate(){
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+		
+		return dateFormat.format(date);
+	}
+	
 	
 	/**
 	 * Converts the return Xml to Document

@@ -115,7 +115,7 @@ public class AribaServiceController {
 		monitorVO = new MonitorVO();
 		monitorVO.setApplicationTransactionNumber(requisitionDTO.getApplicationTransactionNumber());
 		monitorVO.setApplicationType(requisitionDTO.getApplicationType());
-		monitorVO.setCreatedTs(ServiceUtils.getFormattedCurrentTimestampToString());
+		monitorVO.setCreatedTs(ServiceUtils.getCurrentDate());
 		monitorVO.setRequestXmlID(requestFileID);
 		monitorVO.setResponseXmlID(responseFileID);
 		
