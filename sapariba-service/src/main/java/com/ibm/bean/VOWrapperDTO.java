@@ -1,25 +1,48 @@
 package com.ibm.bean;
 
-import java.util.List;
-
-import com.ibm.model.MonitorVO;
 
 public class VOWrapperDTO {
-
-	private List<MonitorVO> monitorVOs = null;
 
 	private String fileName = null;
 
 	private StringBuffer requestXml = null;
 
 	private StringBuffer responseXml = null;
+	
+	private String fileType = null;
+	
+	private StringBuffer recievedData = null;
+	
+	
 
 	/**
-	 * @return the monitorVOs
+	 * @return the fileType
 	 */
-	public List<MonitorVO> getMonitorVOs() {
-		return monitorVOs;
+	public String getFileType() {
+		return fileType;
 	}
+
+	/**
+	 * @param fileType the fileType to set
+	 */
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	/**
+	 * @return the recievedData
+	 */
+	public StringBuffer getRecievedData() {
+		return recievedData;
+	}
+
+	/**
+	 * @param recievedData the recievedData to set
+	 */
+	public void setRecievedData(StringBuffer recievedData) {
+		this.recievedData = recievedData;
+	}
+
 
 	/**
 	 * @return the fileName
@@ -66,12 +89,6 @@ public class VOWrapperDTO {
 		this.responseXml = responseXml;
 	}
 
-	/**
-	 * @param monitorVOs
-	 *            the monitorVOs to set
-	 */
-	public void setMonitorVOs(List<MonitorVO> monitorVOs) {
-		this.monitorVOs = monitorVOs;
-	}
+	
 
 }

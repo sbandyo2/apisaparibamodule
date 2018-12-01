@@ -11,7 +11,21 @@ public class MonitorVO extends BaseVO {
 	private String errorMessage;
 	private String responseXmlID;
 	private String requestXmlID;
+	private String recievedDataID;
 	
+	
+	/**
+	 * @return the recievedDataID
+	 */
+	public String getRecievedDataID() {
+		return recievedDataID;
+	}
+	/**
+	 * @param recievedDataID the recievedDataID to set
+	 */
+	public void setRecievedDataID(String recievedDataID) {
+		this.recievedDataID = recievedDataID;
+	}
 	/**
 	 * @return the transactionID
 	 */

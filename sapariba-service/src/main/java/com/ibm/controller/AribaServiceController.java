@@ -116,6 +116,7 @@ public class AribaServiceController {
 		monitorVO.setApplicationTransactionNumber(requisitionDTO.getApplicationTransactionNumber());
 		monitorVO.setApplicationType(requisitionDTO.getApplicationType());
 		monitorVO.setCreatedTs(ServiceUtils.getCurrentDate());
+		monitorVO.setRecievedDataID(requisitionDTO.getApplicationType()+"_"+requisitionDTO.getApplicationTransactionNumber()+"_"+AribaConstants.RECIEVED);
 		monitorVO.setRequestXmlID(requestFileID);
 		monitorVO.setResponseXmlID(responseFileID);
 		
@@ -165,6 +166,7 @@ public class AribaServiceController {
 		
 		fileName = requisitionDTO.getApplicationTransactionNumber()+"_"+fNameSuffix;
 		voWrapperDTO.setFileName(fileName);
+		voWrapperDTO.setFileType(AribaConstants.XML);
 		
 		restTemplate.postForObject(url, voWrapperDTO, String.class);
 		return fileName;

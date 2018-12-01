@@ -33,5 +33,7 @@ public class AribaConstants {
 	public static final String EXPENSE = "Expense";
 	public static final String P = "P";
 	public static final String K = "K";
+	
+	public static final String XML = ".xml";
 
 }
