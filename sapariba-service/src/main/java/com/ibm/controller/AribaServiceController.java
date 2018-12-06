@@ -56,7 +56,7 @@ public class AribaServiceController {
 		backenedApplication = eurekaClient.getApplication("backend-service");
 		instanceInfo = backenedApplication.getInstances().get(0);
 		
-		//post the soap request
+		// post the soap request
 		dataTransformerService = new DataTransformerService();
 		dataTransformerService.postSoapRequest(instanceInfo,requisitionDTO);
 		
