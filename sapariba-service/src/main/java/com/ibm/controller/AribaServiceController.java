@@ -58,7 +58,7 @@ public class AribaServiceController {
 		
 		// post the soap request
 		dataTransformerService = new DataTransformerService();
-		dataTransformerService.postSoapRequest(eurekaClient,requisitionDTO);
+		dataTransformerService.postSoapRequest(eurekaClient,restTemplate,requisitionDTO);
 		
 		logger.info("Ariba submission completed for transaction  "+requisitionDTO.getApplicationTransactionNumber());
 				

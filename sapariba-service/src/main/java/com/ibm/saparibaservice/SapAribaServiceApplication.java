@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableEurekaClient
-@ComponentScan(basePackages = { "com.ibm.csaservice","com.ibm.controller"} )
+@ComponentScan(basePackages = { "com.ibm.saparibaservice","com.ibm.controller"} )
 public class SapAribaServiceApplication {
 
 	public static void main(String[] args) {

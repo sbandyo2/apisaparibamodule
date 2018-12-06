@@ -53,13 +53,11 @@ public class DataTransformerService {
 	
 	private Map<String,Object> elementValueMap= null;
 	
-	@Autowired
-	private RestTemplate restTemplate;
 	
 	/**
 	 * @param requisitionDTO
 	 */
-	public void postSoapRequest(EurekaClient instanceInfo, RequisitionDTO requisitionDTO) {
+	public void postSoapRequest(EurekaClient instanceInfo,RestTemplate restTemplate, RequisitionDTO requisitionDTO) {
 		String soapEndpointUrl = null;
 		String soapAction =null;
 
@@ -67,7 +65,7 @@ public class DataTransformerService {
 		soapEndpointUrl = ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_ENDPOINT);
 		soapAction =ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_ACTION);
 
-		callSoapWebService(instanceInfo, soapEndpointUrl, soapAction,requisitionDTO);
+		callSoapWebService(instanceInfo,restTemplate, soapEndpointUrl, soapAction,requisitionDTO);
 		
 	}
 	
@@ -75,7 +73,7 @@ public class DataTransformerService {
 	 * @param soapEndpointUrl
 	 * @param soapAction
 	 */
-	private void callSoapWebService(EurekaClient instanceInfo, String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
+	private void callSoapWebService(EurekaClient instanceInfo,RestTemplate restTemplate, String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
 		ByteArrayOutputStream out = null;
 		SOAPConnectionFactory soapConnectionFactory = null;
 		SOAPConnection soapConnection = null;
@@ -87,7 +85,7 @@ public class DataTransformerService {
 			soapConnection = soapConnectionFactory.createConnection();
 
 			// Send SOAP Message to SOAP Server
-			soapResponse = soapConnection.call(createSOAPRequest(instanceInfo,soapAction,requisitionDTO),soapEndpointUrl);
+			soapResponse = soapConnection.call(createSOAPRequest(instanceInfo,restTemplate,soapAction,requisitionDTO),soapEndpointUrl);
 
 			// Print the SOAP Response
 			out = new ByteArrayOutputStream();
@@ -122,7 +120,7 @@ public class DataTransformerService {
 	 * @return
 	 * @throws Exception
 	 */
-	private SOAPMessage createSOAPRequest(EurekaClient instanceInfo, String soapAction,RequisitionDTO requisitionDTO) throws Exception {
+	private SOAPMessage createSOAPRequest(EurekaClient instanceInfo,RestTemplate restTemplate, String soapAction,RequisitionDTO requisitionDTO) throws Exception {
 
 		ByteArrayOutputStream out = null;
 		MessageFactory messageFactory = MessageFactory
@@ -130,7 +128,7 @@ public class DataTransformerService {
 
 		SOAPMessage soapMessage = messageFactory.createMessage();
 
-		createSoapEnvelope(instanceInfo, soapMessage,requisitionDTO);
+		createSoapEnvelope(instanceInfo,restTemplate, soapMessage,requisitionDTO);
 
 		@SuppressWarnings("restriction")
 		String authorization = new sun.misc.BASE64Encoder().encode((ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_CREDENTIAL)).getBytes());
@@ -155,7 +153,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws ServiceException
 	 */
-	private void createSoapEnvelope(EurekaClient instanceInfo, SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
+	private void createSoapEnvelope(EurekaClient instanceInfo,RestTemplate restTemplate, SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPPart soapPart = soapMessage.getSOAPPart();
 		String myNamespace = ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_NS);
@@ -176,7 +174,7 @@ public class DataTransformerService {
 		soapHeaderElem1.addTextNode(ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_PARTITION));
 
 		// create SOAP Body
-		createSoapBody(instanceInfo, myNamespace, envelope,requisitionDTO);
+		createSoapBody(instanceInfo,restTemplate, myNamespace, envelope,requisitionDTO);
 	}
 	
 	/**
@@ -185,7 +183,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws GDException 
 	 */
-	private void createSoapBody(EurekaClient instanceInfo, String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
+	private void createSoapBody(EurekaClient instanceInfo,RestTemplate restTemplate, String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPBody soapBody = envelope.getBody();
 
@@ -350,7 +348,7 @@ public class DataTransformerService {
 			
 			//fetch VendorId against supplierId
 			String vendorId = "";
-			vendorId = fetchVendorId(instanceInfo, lineItemDTO.getLineitemSupplierId().trim());
+			vendorId = fetchVendorId(instanceInfo,restTemplate, lineItemDTO.getLineitemSupplierId().trim());
 			SOAPElement supplier = item.addChildElement("Supplier", myNamespace);
 			SOAPElement supplierUniqueName = supplier.addChildElement("UniqueName",myNamespace);
 			setValue(supplierUniqueName, vendorId);
@@ -531,7 +529,7 @@ public class DataTransformerService {
 	 * @param  instanceInfo
 	 * @return
 	 */
-	public String fetchVendorId(EurekaClient eurekaClient,String locationId) {
+	public String fetchVendorId(EurekaClient eurekaClient,RestTemplate restTemplate,String locationId) {
 		String url = null;	
 		String jsonString = null;
 		String vendorId = null;
@@ -546,10 +544,7 @@ public class DataTransformerService {
 			instanceInfo = backenedApplication.getInstances().get(0);
 			
 			url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
-			logger.info("Invoking url"+url+" resttemplate"+ restTemplate);
 			jsonString = restTemplate.postForObject(url, locationId, String.class);
-			
-			logger.info("Vendor Id fetched "+jsonString);
 			
 			JSONObject jsonObj = new JSONObject(jsonString);
 			if(jsonObj.has(locationId)) {
@@ -567,12 +562,6 @@ public class DataTransformerService {
 		}
 		
 		return vendorId;	
-	}
-	
-	
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
 	}
 	
 }
