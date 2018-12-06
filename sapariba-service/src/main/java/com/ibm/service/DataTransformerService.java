@@ -22,6 +22,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,6 +39,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 
+@Service
 public class DataTransformerService {
 
 	Logger logger = LoggerFactory.getLogger(DataTransformerService.class);
@@ -543,7 +546,9 @@ public class DataTransformerService {
 			instanceInfo = backenedApplication.getInstances().get(0);
 			
 			url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
-				
+			url = "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
+			
+			logger.info("Invoking url"+url);
 			jsonString = restTemplate.postForObject(url, locationId, String.class);
 			
 			logger.info("Vendor Id fetched "+jsonString);
@@ -564,6 +569,12 @@ public class DataTransformerService {
 		}
 		
 		return vendorId;	
+	}
+	
+	
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
 	}
 	
 }
