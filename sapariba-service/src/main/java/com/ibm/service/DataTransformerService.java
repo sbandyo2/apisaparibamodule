@@ -537,15 +537,15 @@ public class DataTransformerService {
 		
 		logger.info("Looking up for supplier  ID: " +locationId );
 		
-		backenedApplication = eurekaClient.getApplication("backend-service");
-		instanceInfo = backenedApplication.getInstances().get(0);
-		
-		
-		url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo";
-			
-		jsonString = restTemplate.postForObject(url, locationId, String.class);
-		
 		try{
+
+			backenedApplication = eurekaClient.getApplication("backend-service");
+			instanceInfo = backenedApplication.getInstances().get(0);
+			
+			url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
+				
+			jsonString = restTemplate.postForObject(url, locationId, String.class);
+			
 			JSONObject jsonObj = new JSONObject(jsonString);
 			if(jsonObj.has(locationId)) {
 				vendorId = jsonObj.get(locationId).toString();
@@ -557,7 +557,7 @@ public class DataTransformerService {
 		logger.info("vendorId for  supplier id: " + vendorId);
 		
 		}catch(Exception e) {
-			logger.error("Error occurred while fetching the vendor id");
+			logger.error("Error occurred while fetching the vendor id" +e.getMessage());
 		}
 		
 		return vendorId;	
