@@ -546,9 +546,7 @@ public class DataTransformerService {
 			instanceInfo = backenedApplication.getInstances().get(0);
 			
 			url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
-			url = "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo/";
-			
-			logger.info("Invoking url"+url);
+			logger.info("Invoking url"+url+" resttemplate"+ restTemplate);
 			jsonString = restTemplate.postForObject(url, locationId, String.class);
 			
 			logger.info("Vendor Id fetched "+jsonString);
