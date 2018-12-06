@@ -18,8 +18,11 @@ import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,6 +33,7 @@ import com.ibm.bean.RequisitionDTO;
 import com.ibm.constants.AribaConstants;
 import com.ibm.exception.ServiceException;
 import com.ibm.utils.ServiceUtils;
+import com.netflix.appinfo.InstanceInfo;
 
 public class DataTransformerService {
 
@@ -44,10 +48,13 @@ public class DataTransformerService {
 	
 	private Map<String,Object> elementValueMap= null;
 	
+	@Autowired
+	private RestTemplate restTemplate;
+	
 	/**
 	 * @param requisitionDTO
 	 */
-	public void postSoapRequest(RequisitionDTO requisitionDTO) {
+	public void postSoapRequest(InstanceInfo instanceInfo, RequisitionDTO requisitionDTO) {
 		String soapEndpointUrl = null;
 		String soapAction =null;
 
@@ -55,7 +62,7 @@ public class DataTransformerService {
 		soapEndpointUrl = ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_ENDPOINT);
 		soapAction =ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_ACTION);
 
-		callSoapWebService(soapEndpointUrl, soapAction,requisitionDTO);
+		callSoapWebService(instanceInfo, soapEndpointUrl, soapAction,requisitionDTO);
 		
 	}
 	
@@ -63,7 +70,7 @@ public class DataTransformerService {
 	 * @param soapEndpointUrl
 	 * @param soapAction
 	 */
-	private void callSoapWebService(String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
+	private void callSoapWebService(InstanceInfo instanceInfo, String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
 		ByteArrayOutputStream out = null;
 		SOAPConnectionFactory soapConnectionFactory = null;
 		SOAPConnection soapConnection = null;
@@ -75,7 +82,7 @@ public class DataTransformerService {
 			soapConnection = soapConnectionFactory.createConnection();
 
 			// Send SOAP Message to SOAP Server
-			soapResponse = soapConnection.call(createSOAPRequest(soapAction,requisitionDTO),soapEndpointUrl);
+			soapResponse = soapConnection.call(createSOAPRequest(instanceInfo,soapAction,requisitionDTO),soapEndpointUrl);
 
 			// Print the SOAP Response
 			out = new ByteArrayOutputStream();
@@ -110,7 +117,7 @@ public class DataTransformerService {
 	 * @return
 	 * @throws Exception
 	 */
-	private SOAPMessage createSOAPRequest(String soapAction,RequisitionDTO requisitionDTO) throws Exception {
+	private SOAPMessage createSOAPRequest(InstanceInfo instanceInfo, String soapAction,RequisitionDTO requisitionDTO) throws Exception {
 
 		ByteArrayOutputStream out = null;
 		MessageFactory messageFactory = MessageFactory
@@ -118,7 +125,7 @@ public class DataTransformerService {
 
 		SOAPMessage soapMessage = messageFactory.createMessage();
 
-		createSoapEnvelope(soapMessage,requisitionDTO);
+		createSoapEnvelope(instanceInfo, soapMessage,requisitionDTO);
 
 		@SuppressWarnings("restriction")
 		String authorization = new sun.misc.BASE64Encoder().encode((ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_CREDENTIAL)).getBytes());
@@ -143,7 +150,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws ServiceException
 	 */
-	private void createSoapEnvelope(SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
+	private void createSoapEnvelope(InstanceInfo instanceInfo, SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPPart soapPart = soapMessage.getSOAPPart();
 		String myNamespace = ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_NS);
@@ -164,7 +171,7 @@ public class DataTransformerService {
 		soapHeaderElem1.addTextNode(ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_PARTITION));
 
 		// create SOAP Body
-		createSoapBody(myNamespace, envelope,requisitionDTO);
+		createSoapBody(instanceInfo, myNamespace, envelope,requisitionDTO);
 	}
 	
 	/**
@@ -173,7 +180,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws GDException 
 	 */
-	private void createSoapBody(String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
+	private void createSoapBody(InstanceInfo instanceInfo, String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPBody soapBody = envelope.getBody();
 
@@ -335,10 +342,13 @@ public class DataTransformerService {
 
 			SOAPElement quantity = item.addChildElement("Quantity", myNamespace);
 			setValue(quantity, lineItemDTO.getLineItemQty());
-
+			
+			//fetch VendorId against supplierId
+			String vendorId = "";
+			vendorId = fetchVendorId(instanceInfo, lineItemDTO.getLineitemSupplierId().trim());
 			SOAPElement supplier = item.addChildElement("Supplier", myNamespace);
 			SOAPElement supplierUniqueName = supplier.addChildElement("UniqueName",myNamespace);
-			setValue(supplierUniqueName, lineItemDTO.getLineitemSupplierId());
+			setValue(supplierUniqueName, vendorId);
 
 			//custom
 			SOAPElement custom = item.addChildElement("custom",myNamespace);
@@ -509,6 +519,33 @@ public class DataTransformerService {
 	 */
 	public Map<String, Object> getElementValueMap() {
 		return elementValueMap;
+	}
+	
+	/**
+	 * @param requisitionDTO
+	 * @param instanceInfo
+	 * @return
+	 */
+	public String fetchVendorId(InstanceInfo instanceInfo,String locationId) {
+		String url = null;	
+		String jsonString = null;
+		String vendorId = null;
+		
+		url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo";
+		
+		Map<String, Object> params = new HashMap<>();
+		params.put("LocationId", locationId);
+		
+		jsonString = restTemplate.postForObject(url, params, String.class);
+		
+		try{
+			JSONObject jsonObj = new JSONObject(jsonString);
+			vendorId = jsonObj.get("VendorID").toString();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return vendorId;	
 	}
 	
 }
