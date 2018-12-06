@@ -546,6 +546,8 @@ public class DataTransformerService {
 				
 			jsonString = restTemplate.postForObject(url, locationId, String.class);
 			
+			logger.info("Vendor Id fetched "+jsonString);
+			
 			JSONObject jsonObj = new JSONObject(jsonString);
 			if(jsonObj.has(locationId)) {
 				vendorId = jsonObj.get(locationId).toString();
@@ -557,7 +559,8 @@ public class DataTransformerService {
 		logger.info("vendorId for  supplier id: " + vendorId);
 		
 		}catch(Exception e) {
-			logger.error("Error occurred while fetching the vendor id" +e.getMessage());
+			logger.error("Error occurred while fetching the vendor id" );
+			e.printStackTrace();
 		}
 		
 		return vendorId;	
