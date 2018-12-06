@@ -532,15 +532,18 @@ public class DataTransformerService {
 		String vendorId = null;
 		
 		url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo";
-		
-		Map<String, Object> params = new HashMap<>();
-		params.put("LocationId", locationId);
-		
-		jsonString = restTemplate.postForObject(url, params, String.class);
+			
+		jsonString = restTemplate.postForObject(url, locationId, String.class);
 		
 		try{
 			JSONObject jsonObj = new JSONObject(jsonString);
-			vendorId = jsonObj.get("VendorID").toString();
+			if(jsonObj.has(locationId)) {
+				vendorId = jsonObj.get(locationId).toString();
+				logger.info("vendorId against supplier id: " +locationId + "is :" + vendorId);
+			}else {
+				logger.info("vendorId not against for supplier id: " + locationId);
+				vendorId = locationId;
+			}
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
