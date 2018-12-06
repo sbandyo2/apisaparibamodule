@@ -34,6 +34,8 @@ import com.ibm.constants.AribaConstants;
 import com.ibm.exception.ServiceException;
 import com.ibm.utils.ServiceUtils;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 
 public class DataTransformerService {
 
@@ -54,7 +56,7 @@ public class DataTransformerService {
 	/**
 	 * @param requisitionDTO
 	 */
-	public void postSoapRequest(InstanceInfo instanceInfo, RequisitionDTO requisitionDTO) {
+	public void postSoapRequest(EurekaClient instanceInfo, RequisitionDTO requisitionDTO) {
 		String soapEndpointUrl = null;
 		String soapAction =null;
 
@@ -70,7 +72,7 @@ public class DataTransformerService {
 	 * @param soapEndpointUrl
 	 * @param soapAction
 	 */
-	private void callSoapWebService(InstanceInfo instanceInfo, String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
+	private void callSoapWebService(EurekaClient instanceInfo, String soapEndpointUrl, String soapAction,RequisitionDTO requisitionDTO) {
 		ByteArrayOutputStream out = null;
 		SOAPConnectionFactory soapConnectionFactory = null;
 		SOAPConnection soapConnection = null;
@@ -117,7 +119,7 @@ public class DataTransformerService {
 	 * @return
 	 * @throws Exception
 	 */
-	private SOAPMessage createSOAPRequest(InstanceInfo instanceInfo, String soapAction,RequisitionDTO requisitionDTO) throws Exception {
+	private SOAPMessage createSOAPRequest(EurekaClient instanceInfo, String soapAction,RequisitionDTO requisitionDTO) throws Exception {
 
 		ByteArrayOutputStream out = null;
 		MessageFactory messageFactory = MessageFactory
@@ -150,7 +152,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws ServiceException
 	 */
-	private void createSoapEnvelope(InstanceInfo instanceInfo, SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
+	private void createSoapEnvelope(EurekaClient instanceInfo, SOAPMessage soapMessage , RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPPart soapPart = soapMessage.getSOAPPart();
 		String myNamespace = ServiceUtils.getItemsForSoapConnection(AribaConstants.WS_NS);
@@ -180,7 +182,7 @@ public class DataTransformerService {
 	 * @throws SOAPException
 	 * @throws GDException 
 	 */
-	private void createSoapBody(InstanceInfo instanceInfo, String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
+	private void createSoapBody(EurekaClient instanceInfo, String myNamespace, SOAPEnvelope envelope,RequisitionDTO requisitionDTO)
 			throws SOAPException, ServiceException {
 		SOAPBody soapBody = envelope.getBody();
 
@@ -526,10 +528,18 @@ public class DataTransformerService {
 	 * @param  instanceInfo
 	 * @return
 	 */
-	public String fetchVendorId(InstanceInfo instanceInfo,String locationId) {
+	public String fetchVendorId(EurekaClient eurekaClient,String locationId) {
 		String url = null;	
 		String jsonString = null;
 		String vendorId = null;
+		Application backenedApplication = null;
+		InstanceInfo instanceInfo = null;
+		
+		logger.info("Looking up for supplier  ID: " +locationId );
+		
+		backenedApplication = eurekaClient.getApplication("backend-service");
+		instanceInfo = backenedApplication.getInstances().get(0);
+		
 		
 		url= "http://" + instanceInfo.getIPAddr() + ":"+ instanceInfo.getPort() + "/" + "/getSuppPartneringInfo";
 			
@@ -539,13 +549,15 @@ public class DataTransformerService {
 			JSONObject jsonObj = new JSONObject(jsonString);
 			if(jsonObj.has(locationId)) {
 				vendorId = jsonObj.get(locationId).toString();
-				logger.info("vendorId against supplier id: " +locationId + "is :" + vendorId);
+				
 			}else {
-				logger.info("vendorId not against for supplier id: " + locationId);
 				vendorId = locationId;
 			}
+		
+		logger.info("vendorId for  supplier id: " + vendorId);
+		
 		}catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Error occurred while fetching the vendor id");
 		}
 		
 		return vendorId;	
