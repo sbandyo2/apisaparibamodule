@@ -45,6 +45,8 @@ public class DataTransformerService {
 	Logger logger = LoggerFactory.getLogger(DataTransformerService.class);
 	
 	public static final String SOAP_1_1_PROTOCOL_LOCAL = "SOAP 1.1 Protocol";
+	private  static final String FLIP_FROM_UOM = "UL";
+	private  static final String FLIP_TO_UOM = "EA";
 	
 	
 	private StringBuffer sendData = null;
@@ -389,9 +391,25 @@ public class DataTransformerService {
 
 			//Value Order
 			SOAPElement voCustomString  = custom.addChildElement("CustomString", myNamespace);
-			QName valueOrderString = new QName("name");
-			voCustomString.addAttribute(valueOrderString, "IsValueOrder");
-			setValue(voCustomString, lineItemDTO.getValueOrder());
+			
+			String uom = lineItemDTO.getLineItemUom();
+			
+			// IsValueOrder logic , if data is sent then set the value based on upstream data else decide based on the UOM type
+			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getValueOrder())) {
+				QName valueOrderString = new QName("name");
+				voCustomString.addAttribute(valueOrderString, "IsValueOrder");
+				setValue(voCustomString, lineItemDTO.getValueOrder());
+			} else {
+				QName valueOrderString = new QName("name");
+				voCustomString.addAttribute(valueOrderString, "IsValueOrder");
+				if(FLIP_FROM_UOM.equalsIgnoreCase(uom)){
+					setValue(voCustomString, "true");
+				} else {
+					setValue(voCustomString, "false");
+				}
+				
+			}
+			
 			
 			SOAPElement sdCustomeDate  = custom.addChildElement("CustomString", myNamespace);
 			QName startDateMaterial = new QName("name");
