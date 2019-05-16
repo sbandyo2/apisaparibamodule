@@ -239,6 +239,11 @@ public class DataTransformerService {
 
 			SOAPElement des = description.addChildElement("Description", myNamespace);
 			setValue(des, lineItemDTO.getLineitemDescription());
+			
+			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getManPartNumber())) {
+				SOAPElement manPartNumber = description.addChildElement("ManPartNumber", myNamespace);
+				setValue(manPartNumber, lineItemDTO.getManPartNumber());
+			}
 
 			SOAPElement price = description.addChildElement("Price", myNamespace);
 			SOAPElement amount = price.addChildElement("Amount", myNamespace);
@@ -339,6 +344,16 @@ public class DataTransformerService {
 
 			SOAPElement numberInCollection = item.addChildElement("NumberInCollection", myNamespace);
 			setValue(numberInCollection, lineItemDTO.getLineItemSeqNo());
+			
+			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getShipTo())) {
+				SOAPElement shipTo = item.addChildElement("ShipTo", myNamespace);
+				setValue(shipTo, lineItemDTO.getShipTo());
+			}
+			
+			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getPurchaseOrg())) {
+				SOAPElement purchaseOrg = item.addChildElement("PurchaseOrg", myNamespace);
+				setValue(purchaseOrg, lineItemDTO.getPurchaseOrg());
+			}
 
 			SOAPElement originatingSystemLineNumber = item.addChildElement("OriginatingSystemLineNumber", myNamespace);
 			setValue(originatingSystemLineNumber, lineItemDTO.getOriginatingSystemLineItemNumber());
