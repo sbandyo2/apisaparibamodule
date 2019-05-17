@@ -270,6 +270,22 @@ public class DataTransformerService {
 			
 			// if the line item has work break down structure element or cost centre then consider the
 			// accounting type before sending it to Ariba
+			SOAPElement importedAccountingsStaging = item.addChildElement("ImportedAccountingsStaging", myNamespace);
+			SOAPElement splitAccountings = importedAccountingsStaging.addChildElement("SplitAccountings", myNamespace);
+
+			SOAPElement splitAccountingItem = splitAccountings.addChildElement("item", myNamespace);
+
+
+			SOAPElement numberInCollectionAcc = splitAccountingItem.addChildElement("NumberInCollection", myNamespace);
+			setValue(numberInCollectionAcc, lineItemDTO.getLineItemSeqNo());
+
+			// with the split accounting
+			SOAPElement percentage = splitAccountingItem.addChildElement("Percentage", myNamespace);
+			setValue(percentage, lineItemDTO.getSplitPercentage());
+
+			SOAPElement QuantityAcc = splitAccountingItem.addChildElement("Quantity", myNamespace);
+			setValue(QuantityAcc, lineItemDTO.getLineItemQty());
+			
 			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getWbsElement()) || !ServiceUtils.isNullOrEmpty(lineItemDTO.getCostCentre())){
 				String accountValue = AribaConstants.P;
 				boolean isWBS = true;
@@ -293,11 +309,7 @@ public class DataTransformerService {
 					acctype = AribaConstants.EXPENSE;
 				}
 				setValue(importedAccountTypeStaging, acctype.trim());
-				
-				SOAPElement importedAccountingsStaging = item.addChildElement("ImportedAccountingsStaging", myNamespace);
-				SOAPElement splitAccountings = importedAccountingsStaging.addChildElement("SplitAccountings", myNamespace);
-
-				SOAPElement splitAccountingItem = splitAccountings.addChildElement("item", myNamespace);
+	
 				
 				/*If both Cost center and WBS element then Cost center should be ignored
 				 * else if only Cost center is sent then it should be populated here.*/
@@ -305,27 +317,17 @@ public class DataTransformerService {
 				String ccString = lineItemDTO.getWbsElement();
 				if(!isWBS) {
 					ccString = lineItemDTO.getCostCentre();
+					SOAPElement costCenter = splitAccountingItem.addChildElement("CostCenter", myNamespace);
+					SOAPElement costCenterUniqueName = costCenter.addChildElement("UniqueName", myNamespace);
+					setValue(costCenterUniqueName, ccString);
+				} else {
+					SOAPElement costCenter = splitAccountingItem.addChildElement("WBSElement", myNamespace);
+					SOAPElement costCenterUniqueName = costCenter.addChildElement("UniqueName", myNamespace);
+					setValue(costCenterUniqueName, ccString);
 				}
-				SOAPElement costCenter = splitAccountingItem.addChildElement("CostCenter", myNamespace);
-				setValue(costCenter, ccString);
 			}
 		
 			
-			SOAPElement importedAccountingsStaging = item.addChildElement("ImportedAccountingsStaging", myNamespace);
-			SOAPElement splitAccountings = importedAccountingsStaging.addChildElement("SplitAccountings", myNamespace);
-
-			SOAPElement splitAccountingItem = splitAccountings.addChildElement("item", myNamespace);
-
-
-			SOAPElement numberInCollectionAcc = splitAccountingItem.addChildElement("NumberInCollection", myNamespace);
-			setValue(numberInCollectionAcc, lineItemDTO.getLineItemSeqNo());
-
-			// with the split accounting
-			SOAPElement percentage = splitAccountingItem.addChildElement("Percentage", myNamespace);
-			setValue(percentage, lineItemDTO.getSplitPercentage());
-
-			SOAPElement QuantityAcc = splitAccountingItem.addChildElement("Quantity", myNamespace);
-			setValue(QuantityAcc, lineItemDTO.getLineItemQty());
 
 			// add importedDeliverToStaging
 			item.addChildElement("ImportedDeliverToStaging", myNamespace);
@@ -349,11 +351,13 @@ public class DataTransformerService {
 			
 			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getShipTo())) {
 				SOAPElement shipTo = item.addChildElement("ShipTo", myNamespace);
-				setValue(shipTo, lineItemDTO.getShipTo());
+				SOAPElement shipToUniqueName = shipTo.addChildElement("UniqueName", myNamespace);
+				setValue(shipToUniqueName, lineItemDTO.getShipTo());
 			}
 			
 			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getPurchaseOrg())) {
 				SOAPElement purchaseOrg = item.addChildElement("PurchaseOrg", myNamespace);
+				SOAPElement shipToUniqueName = purchaseOrg.addChildElement("UniqueName", myNamespace);
 				setValue(purchaseOrg, lineItemDTO.getPurchaseOrg());
 			}
 
