@@ -357,8 +357,8 @@ public class DataTransformerService {
 			
 			if(!ServiceUtils.isNullOrEmpty(lineItemDTO.getPurchaseOrg())) {
 				SOAPElement purchaseOrg = item.addChildElement("PurchaseOrg", myNamespace);
-				SOAPElement shipToUniqueName = purchaseOrg.addChildElement("UniqueName", myNamespace);
-				setValue(purchaseOrg, lineItemDTO.getPurchaseOrg());
+				SOAPElement purchaseOrgUniqueName = purchaseOrg.addChildElement("UniqueName", myNamespace);
+				setValue(purchaseOrgUniqueName, lineItemDTO.getPurchaseOrg());
 			}
 
 			SOAPElement originatingSystemLineNumber = item.addChildElement("OriginatingSystemLineNumber", myNamespace);
